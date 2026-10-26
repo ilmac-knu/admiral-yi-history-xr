@@ -4,7 +4,7 @@
 
 ## 구성
 - `index.html`: 3D 뷰어 및 장군 위치·크기 조절 기능
-- `panokseon.glb`: 판옥선 3D 모델
+- `Sketchfab_panokseon.glb`: 판옥선 3D 모델
 - `admiral-yi-sunsin.glb`: 이순신 장군 3D 모델
 
 ## 실행
