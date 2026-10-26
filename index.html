@@ -1,49 +1,65 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>이순신 장군과 판옥선 · 3D 배치</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,'Malgun Gothic',sans-serif;background:#112033;color:#fff}header{padding:12px 18px;background:#18304a}h2{font-size:21px;margin:0 0 5px}header small{color:#d2deeb}#view{height:68vh;min-height:360px;touch-action:none}#msg{padding:9px 16px;background:#132338;color:#d6e8ff;min-height:39px}#controls{display:flex;flex-wrap:wrap;align-items:center;gap:13px 22px;background:#233a54;padding:14px}label{display:flex;align-items:center;gap:7px;font-size:14px}input[type=range]{width:130px;accent-color:#4187fa}output{min-width:43px;font-variant-numeric:tabular-nums}button{background:#f5ce79;border:0;border-radius:6px;padding:9px 13px;cursor:pointer}button:hover{background:#ffe2a4}.hint{padding:10px 16px;color:#c3d3e6;font-size:13px}select{padding:6px;border-radius:5px} @media(max-width:600px){#view{height:55vh}label{width:100%;justify-content:space-between}input[type=range]{width:46%}}
-</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}</script>
-</head><body>
-<header><h2>이순신 장군과 판옥선</h2><small>선수 갑판 배치 실험 · 드래그 회전 · 휠/두 손가락 확대·축소</small></header>
-<div id="view"></div><div id="msg">3D 모델을 불러오는 중...</div>
-<section id="controls">
-<label>좌우 X <input id="x" type="range" min="-0.5" max="0.5" step="0.005" value="0"><output id="xo"></output></label>
-<label>높이 Y <input id="y" type="range" min="-0.5" max="0.7" step="0.005" value="0.02"><output id="yo"></output></label>
-<label>앞뒤 Z <input id="z" type="range" min="-0.55" max="0.55" step="0.005" value="-0.28"><output id="zo"></output></label>
-<label>크기 <input id="scale" type="range" min="0.04" max="0.55" step="0.005" value="0.17"><output id="scaleo"></output></label>
-<label>회전 <input id="rotation" type="range" min="-180" max="180" step="1" value="180"><output id="rotationo"></output></label>
-<button id="front">선수 방향 바꾸기</button><button id="reset">초기화</button><button id="save">설정값 복사</button>
-</section><div class="hint">장군이 지붕 위에 보이면 높이 Y를 내리고, 선수 반대편에 있으면 ‘선수 방향 바꾸기’를 누르세요. 발이 갑판에 닿도록 조정하세요.</div>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>이순신 장군과 판옥선 | 3D 역사 체험</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#102035;color:#fff;font-family:system-ui,'Malgun Gothic',sans-serif}header{background:#1c3049;padding:12px 18px}h2{margin:0 0 5px;font-size:21px}small{color:#d4e0ee}#view{height:65vh;min-height:350px;touch-action:none}#status{padding:10px 16px;background:#16273d;color:#e0eeff}#controls{display:flex;gap:12px 20px;flex-wrap:wrap;align-items:center;background:#263e5b;padding:13px}label{display:flex;gap:7px;align-items:center;font-size:14px}input[type=range]{width:120px;accent-color:#4e8cf9}output{min-width:40px}button{padding:10px 12px;background:#f3ce7c;border:0;border-radius:5px;cursor:pointer}button:hover{background:#ffe3a7}.note{padding:9px 15px;color:#c7d6e7;font-size:13px}@media(max-width:650px){#view{height:53vh}label{width:100%;justify-content:space-between}input[type=range]{width:48%}}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}</script></head><body>
+<header><h2>이순신 장군과 판옥선</h2><small>Sketchfab 판옥선 + 직접 제작한 이순신 장군 · 마우스/손가락 회전 · 확대·축소</small></header>
+<div id="view"></div><div id="status">3D 모델을 불러오는 중입니다. 판옥선 파일은 약 27MB입니다…</div>
+<div id="controls">
+<label>좌우 <input id="x" type="range" min="-100" max="100" value="0"><output id="xo">0</output></label>
+<label>앞뒤 <input id="z" type="range" min="-100" max="100" value="60"><output id="zo">60</output></label>
+<label>높이 보정 <input id="y" type="range" min="-100" max="100" value="0"><output id="yo">0</output></label>
+<label>장군 크기 <input id="scale" type="range" min="5" max="100" value="45"><output id="scaleo">45</output></label>
+<label>장군 회전 <input id="rotation" type="range" min="-180" max="180" value="0"><output id="rotationo">0</output></label>
+<button id="front">선수 반대쪽으로</button><button id="find">장군 가까이 보기</button><button id="reset">초기화</button><button id="save">설정값 복사</button>
+</div><div class="note">장군은 선체 크기에 맞춰 자동으로 조정됩니다. 높이는 갑판 표면을 추정하여 맞춥니다. 잘 보이지 않으면 ‘장군 가까이 보기’를 누르세요. 장군은 교육용 연출로 선수 갑판에 배치합니다.</div>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-const view=document.querySelector('#view'),msg=document.querySelector('#msg');
+const view=document.getElementById('view'),status=document.getElementById('status');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xeaf1f7);
-const camera=new THREE.PerspectiveCamera(45,1,0.01,100);camera.position.set(1.3,0.85,1.6);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;view.appendChild(renderer.domElement);
-const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.minDistance=.45;orbit.maxDistance=7;
-scene.add(new THREE.HemisphereLight(0xffffff,0x8995a7,2.5));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(2,5,3);scene.add(sun);
-const ship=new THREE.Group();scene.add(ship);let admiral=null,frontSign=-1;
-const ids=['x','y','z','scale','rotation'];const inputs=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
-const defaults={x:0,y:0.02,z:-0.28,scale:0.17,rotation:180};
-function update(){for(const id of ids)document.getElementById(id+'o').textContent=inputs[id].value;if(!admiral)return;admiral.position.set(+inputs.x.value,+inputs.y.value,frontSign*Math.abs(+inputs.z.value));admiral.scale.setScalar(+inputs.scale.value);admiral.rotation.y=+inputs.rotation.value*Math.PI/180;}
-for(const id of ids)inputs[id].addEventListener('input',()=>{if(id==='z')frontSign=Math.sign(+inputs.z.value)||frontSign;update()});
-document.getElementById('front').onclick=()=>{frontSign*=-1;inputs.z.value=(frontSign*Math.max(.2,Math.abs(+inputs.z.value))).toFixed(3);inputs.rotation.value=String((+inputs.rotation.value+180+180)%360-180);update()};
-document.getElementById('reset').onclick=()=>{frontSign=-1;for(const id of ids)inputs[id].value=defaults[id];update()};
-document.getElementById('save').onclick=async()=>{const s=ids.map(id=>id+'='+inputs[id].value).join(', ');try{await navigator.clipboard.writeText(s);msg.textContent='복사 완료: '+s}catch{msg.textContent='설정값: '+s}};
-const loader=new GLTFLoader();function load(url){return new Promise((resolve,reject)=>loader.load(url,g=>resolve(g.scene),undefined,e=>reject(new Error(url+' : '+(e.message||e)))))}
-function normalize(model){const b=new THREE.Box3().setFromObject(model),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());model.position.sub(c);model.scale.setScalar(1/Math.max(s.x,s.y,s.z));return model;}
-Promise.all([load('./Sketchfab_panokseon.glb'),load('./admiral-yi-sunsin.glb')]).then(([boat,person])=>{
-ship.add(normalize(boat));
-// Normalize the character in its own local coordinates. Place its feet at y=0, not its torso center.
-const b=new THREE.Box3().setFromObject(person),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());person.position.set(-c.x,-b.min.y,-c.z);person.scale.setScalar(1/Math.max(s.x,s.y,s.z));
-admiral=new THREE.Group();admiral.add(person);ship.add(admiral);
-const shipBox=new THREE.Box3().setFromObject(boat);const center=shipBox.getCenter(new THREE.Vector3());orbit.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(1.2,.72,1.5));orbit.update();update();
-msg.textContent='Sketchfab 판옥선과 이순신 장군 로딩 완료 · 새 판옥선의 좌표에 맞게 장군 위치를 조정하세요.';
-}).catch(e=>{console.error(e);msg.textContent='모델 로딩 오류: '+e.message+' · GLB 파일명과 GitHub Pages 경로를 확인하세요.'});
-function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}window.addEventListener('resize',resize);resize();
-function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)}animate();update();
+const camera=new THREE.PerspectiveCamera(45,1,.01,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;view.appendChild(renderer.domElement);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.minDistance=.15;orbit.maxDistance=40;
+scene.add(new THREE.HemisphereLight(0xffffff,0x8995a8,2.8));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(5,10,7);scene.add(sun);
+const root=new THREE.Group();scene.add(root);let boat,person,admiral,boatBox,axis='z',length=4,width=2,hullY=0,boatHeight=3,sign=1,ready=false;
+const defaults={x:0,z:60,y:0,scale:45,rotation:0};const keys=Object.keys(defaults),el=Object.fromEntries(keys.map(k=>[k,document.getElementById(k)]));
+function values(){return Object.fromEntries(keys.map(k=>[k,+el[k].value]))}
+function outputs(){keys.forEach(k=>document.getElementById(k+'o').textContent=el[k].value)}
+function locate(){outputs();if(!ready)return;const v=values();
+// Longitudinal axis is inferred from the ship's actual dimensions.
+const forward=(v.z/100)*length*.44*sign,side=(v.x/100)*width*.44;
+const px=axis==='x'?forward:side,pz=axis==='z'?forward:side;
+// Find a deck-like horizontal surface below the sail and above the bottom of the hull.
+const ray=new THREE.Raycaster(new THREE.Vector3(px,boatBox.max.y+2,pz),new THREE.Vector3(0,-1,0));
+const hits=ray.intersectObject(boat,true);let deck=null;
+for(const hit of hits){if(hit.point.y>boatBox.min.y+boatHeight*.10 && hit.point.y<boatBox.min.y+boatHeight*.55){deck=hit.point.y;break}}
+const base=deck??hullY;
+admiral.position.set(px,base+v.y/100*boatHeight*.28,pz);
+const personHeight=length*(v.scale/100)*.34;
+admiral.scale.setScalar(personHeight);
+admiral.rotation.y=(v.rotation+(axis==='x'?90:0)+(sign<0?180:0))*Math.PI/180;
+}
+keys.forEach(k=>el[k].addEventListener('input',locate));
+document.getElementById('front').onclick=()=>{sign*=-1;locate()};
+document.getElementById('reset').onclick=()=>{sign=1;keys.forEach(k=>el[k].value=defaults[k]);locate();frameBoat()};
+document.getElementById('save').onclick=async()=>{const t=keys.map(k=>k+'='+el[k].value).join(', ') + ', 선수방향='+sign;try{await navigator.clipboard.writeText(t);status.textContent='설정값 복사 완료: '+t}catch{status.textContent='설정값: '+t}};
+document.getElementById('find').onclick=()=>{if(!ready)return;const p=admiral.position.clone();orbit.target.copy(p).add(new THREE.Vector3(0,length*.08,0));camera.position.copy(p).add(new THREE.Vector3(length*.35,length*.25,length*.35));orbit.update()};
+function frameBoat(){if(!ready)return;const center=boatBox.getCenter(new THREE.Vector3());orbit.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(length*.85,length*.48,length*.95));orbit.update()}
+const loader=new GLTFLoader();function load(url){return new Promise((resolve,reject)=>loader.load(url,g=>resolve(g.scene),e=>{if(e.total)status.textContent='모델 다운로드 중: '+Math.round(e.loaded/e.total*100)+'%'},e=>reject(new Error(url+' — '+(e.message||e)))))}
+Promise.all([load('./Sketchfab_panokseon.glb'),load('./admiral-yi-sunsin.glb')]).then(([ship,figure])=>{
+boat=ship;root.add(boat);
+// Normalize the entire boat to a stable 4-unit overall size, preserving its original orientation.
+let box=new THREE.Box3().setFromObject(boat),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+const factor=4/Math.max(size.x,size.y,size.z);boat.scale.multiplyScalar(factor);boat.position.sub(center.multiplyScalar(factor));boat.updateMatrixWorld(true);
+boatBox=new THREE.Box3().setFromObject(boat);size=boatBox.getSize(new THREE.Vector3());axis=size.x>=size.z?'x':'z';length=Math.max(size.x,size.z);width=Math.min(size.x,size.z);boatHeight=size.y;
+hullY=boatBox.min.y+boatHeight*.32;
+// Normalize figure independently. Its feet are anchored to local Y=0.
+const fb=new THREE.Box3().setFromObject(figure),fs=fb.getSize(new THREE.Vector3()),fc=fb.getCenter(new THREE.Vector3());
+figure.position.set(-fc.x,-fb.min.y,-fc.z);figure.scale.setScalar(1/Math.max(fs.y,.0001));
+admiral=new THREE.Group();admiral.add(figure);root.add(admiral);ready=true;locate();frameBoat();
+status.textContent='두 GLB 로딩 완료 · 장군이 안 보이면 「장군 가까이 보기」를 클릭하세요. 좌우·앞뒤·높이로 배치를 조정할 수 있습니다.';
+}).catch(err=>{console.error(err);status.textContent='불러오기 실패: '+err.message});
+function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+(function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)})();outputs();
 </script></body></html>
