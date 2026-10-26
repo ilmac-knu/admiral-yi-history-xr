@@ -34,15 +34,15 @@ for(const id of ids)inputs[id].addEventListener('input',()=>{if(id==='z')frontSi
 document.getElementById('front').onclick=()=>{frontSign*=-1;inputs.z.value=(frontSign*Math.max(.2,Math.abs(+inputs.z.value))).toFixed(3);inputs.rotation.value=String((+inputs.rotation.value+180+180)%360-180);update()};
 document.getElementById('reset').onclick=()=>{frontSign=-1;for(const id of ids)inputs[id].value=defaults[id];update()};
 document.getElementById('save').onclick=async()=>{const s=ids.map(id=>id+'='+inputs[id].value).join(', ');try{await navigator.clipboard.writeText(s);msg.textContent='복사 완료: '+s}catch{msg.textContent='설정값: '+s}};
-const loader=new GLTFLoader();function load(url){return new Promise((resolve,reject)=>loader.load(url,g=>resolve(g.scene),undefined,reject))}
+const loader=new GLTFLoader();function load(url){return new Promise((resolve,reject)=>loader.load(url,g=>resolve(g.scene),undefined,e=>reject(new Error(url+' : '+(e.message||e)))))}
 function normalize(model){const b=new THREE.Box3().setFromObject(model),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());model.position.sub(c);model.scale.setScalar(1/Math.max(s.x,s.y,s.z));return model;}
-Promise.all([load('./panokseon.glb'),load('./admiral-yi-sunsin.glb')]).then(([boat,person])=>{
+Promise.all([load('./Sketchfab_panokseon.glb'),load('./admiral-yi-sunsin.glb')]).then(([boat,person])=>{
 ship.add(normalize(boat));
 // Normalize the character in its own local coordinates. Place its feet at y=0, not its torso center.
 const b=new THREE.Box3().setFromObject(person),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());person.position.set(-c.x,-b.min.y,-c.z);person.scale.setScalar(1/Math.max(s.x,s.y,s.z));
 admiral=new THREE.Group();admiral.add(person);ship.add(admiral);
 const shipBox=new THREE.Box3().setFromObject(boat);const center=shipBox.getCenter(new THREE.Vector3());orbit.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(1.2,.72,1.5));orbit.update();update();
-msg.textContent='모델 로딩 완료 · 선수 갑판으로 장군을 옮겨 보세요. 위치는 GLB에 따라 조정이 필요합니다.';
+msg.textContent='Sketchfab 판옥선과 이순신 장군 로딩 완료 · 새 판옥선의 좌표에 맞게 장군 위치를 조정하세요.';
 }).catch(e=>{console.error(e);msg.textContent='모델 로딩 오류: '+e.message+' · GLB 파일명과 GitHub Pages 경로를 확인하세요.'});
 function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}window.addEventListener('resize',resize);resize();
 function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)}animate();update();
