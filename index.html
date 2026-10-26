@@ -5,13 +5,13 @@
 <header><h2>이순신 장군과 판옥선</h2><small>Sketchfab 판옥선 + 직접 제작한 이순신 장군 · 마우스/손가락 회전 · 확대·축소</small></header>
 <div id="view"></div><div id="status">3D 모델을 불러오는 중입니다. 판옥선 파일은 약 27MB입니다…</div>
 <div id="controls">
-<label>좌우 <input id="x" type="range" min="-100" max="100" value="0"><output id="xo">0</output></label>
+<label>좌우 <input id="x" type="range" min="-100" max="100" value="40"><output id="xo">0</output></label>
 <label>앞뒤 <input id="z" type="range" min="-100" max="100" value="60"><output id="zo">60</output></label>
 <label>높이 보정 <input id="y" type="range" min="-100" max="100" value="0"><output id="yo">0</output></label>
 <label>장군 크기 <input id="scale" type="range" min="5" max="100" value="45"><output id="scaleo">45</output></label>
 <label>장군 회전 <input id="rotation" type="range" min="-180" max="180" value="0"><output id="rotationo">0</output></label>
 <button id="front">선수 반대쪽으로</button><button id="find">장군 가까이 보기</button><button id="reset">초기화</button><button id="save">설정값 복사</button>
-</div><div class="note">장군은 선체 크기에 맞춰 자동으로 조정됩니다. 높이는 갑판 표면을 추정하여 맞춥니다. 잘 보이지 않으면 ‘장군 가까이 보기’를 누르세요. 장군은 교육용 연출로 선수 갑판에 배치합니다.</div>
+</div><div class="note">장군은 선체 크기에 맞춰 자동으로 조정됩니다. 높이는 갑판 표면을 추정하여 맞춥니다. 잘 보이지 않으면 ‘장군 가까이 보기’를 누르세요. 장군은 기본적으로 지휘소 계단 앞쪽(돛대 오른편)에 서서 정면을 바라봅니다. 장군 회전 0이 정면이며 슬라이더로 방향을 바꿀 수 있습니다.</div>
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -23,7 +23,7 @@ const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(
 const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.minDistance=.15;orbit.maxDistance=40;
 scene.add(new THREE.HemisphereLight(0xffffff,0x8995a8,2.8));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(5,10,7);scene.add(sun);
 const root=new THREE.Group();scene.add(root);let boat,person,admiral,boatBox,axis='z',length=4,width=2,hullY=0,boatHeight=3,sign=1,ready=false;
-const defaults={x:0,z:60,y:0,scale:45,rotation:0};const keys=Object.keys(defaults),el=Object.fromEntries(keys.map(k=>[k,document.getElementById(k)]));
+const defaults={x:40,z:60,y:0,scale:45,rotation:0};const keys=Object.keys(defaults),el=Object.fromEntries(keys.map(k=>[k,document.getElementById(k)]));
 function values(){return Object.fromEntries(keys.map(k=>[k,+el[k].value]))}
 function outputs(){keys.forEach(k=>document.getElementById(k+'o').textContent=el[k].value)}
 function locate(){outputs();if(!ready)return;const v=values();
@@ -38,7 +38,7 @@ const base=deck??hullY;
 admiral.position.set(px,base+v.y/100*boatHeight*.28,pz);
 const personHeight=length*(v.scale/100)*.34;
 admiral.scale.setScalar(personHeight);
-admiral.rotation.y=(v.rotation+(axis==='x'?90:0)+(sign<0?180:0))*Math.PI/180;
+admiral.rotation.y=(180+v.rotation+(axis==='x'?90:0)+(sign<0?180:0))*Math.PI/180;
 }
 keys.forEach(k=>el[k].addEventListener('input',locate));
 document.getElementById('front').onclick=()=>{sign*=-1;locate()};
@@ -58,7 +58,7 @@ hullY=boatBox.min.y+boatHeight*.32;
 const fb=new THREE.Box3().setFromObject(figure),fs=fb.getSize(new THREE.Vector3()),fc=fb.getCenter(new THREE.Vector3());
 figure.position.set(-fc.x,-fb.min.y,-fc.z);figure.scale.setScalar(1/Math.max(fs.y,.0001));
 admiral=new THREE.Group();admiral.add(figure);root.add(admiral);ready=true;locate();frameBoat();
-status.textContent='두 GLB 로딩 완료 · 장군이 안 보이면 「장군 가까이 보기」를 클릭하세요. 좌우·앞뒤·높이로 배치를 조정할 수 있습니다.';
+status.textContent='두 GLB 로딩 완료 · 계단 앞 배치 및 정면 방향 적용 · 장군이 안 보이면 「장군 가까이 보기」를 클릭하세요. 좌우·앞뒤·높이로 배치를 조정할 수 있습니다.';
 }).catch(err=>{console.error(err);status.textContent='불러오기 실패: '+err.message});
 function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
 (function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)})();outputs();
